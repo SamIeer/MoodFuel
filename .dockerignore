@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.log
+*.DS_Store
+data/
+model/
+.venv/
+.git/
+.github/
