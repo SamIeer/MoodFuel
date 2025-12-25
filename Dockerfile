@@ -23,7 +23,6 @@ USER appuser
 
 # Streamlit runs on port 8501 by default
 EXPOSE 8501
+ENV PORT=8501
 
-# Run Streamlit app
-CMD ["streamlit", "run", "app/dashboard.py", "--server.address=0.0.0.0", "--server.port=${PORT}"]
-
+CMD streamlit run app/dashboard.py --server.address 0.0.0.0 --server.port $PORT
