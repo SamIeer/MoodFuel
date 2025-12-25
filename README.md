@@ -125,17 +125,13 @@ Access your app at:
 ```
 👉 http://localhost:8000/docs
 
-☁️ Cloud Deployment (Render)
-Push your project to GitHub.
-Go to Render
-Create a New Web Service → connect GitHub repo.
-Select Docker environment → deploy.
-Your live AAP will be available at:
-https://moodfuel-api.onrender.com/docs
-
-🧪 Testing
-Run local tests:
-``` pytest -v ```
+- ☁️ Cloud Deployment (Render)
+- Push your project to GitHub.
+- Go to Render
+- Create a New Web Service → connect GitHub repo.
+- Select Docker environment → deploy.
+- Your live AAP will be available at:
+- https://moodfuel.onrender.com
 
 CI/CD automatically runs these tests on every push (see .github/workflows/ci.yml).
 
