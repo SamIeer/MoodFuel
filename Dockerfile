@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
 # Streamlit runs on port 8501 by default
 EXPOSE 8501
 
