@@ -85,10 +85,14 @@ git clone https://github.com/SamIeer/MoodFuel.git
 cd MoodFuel
 ```
 ### 2️⃣ Install Dependencies
-``` pip install -r deploy/requirements.txt ```
+``` 
+pip install -r deploy/requirements.txt
+```
 
 ### 3️⃣ Train the Model
-``` python train_model.py ```
+``` 
+python train_model.py
+ ```
 
 ### 4️⃣ Run FastAPI Backend
 ```
@@ -97,23 +101,30 @@ Visit http://127.0.0.1:8000/docs
 ```
 ### 💻 Run Frontend Interfaces
 Streamlit Dashboard
-``` streamlit run app/dashboard.py ```
+``` 
+streamlit run app/dashboard.py
+ ```
 
 Gradio Demo
-``` python app/gradio_ui.py ```
+``` 
+python app/gradio_ui.py
+```
 
 
 🐳 Docker Deployment
 Build Docker Image
 bash
 Copy code
-``` docker build -t moodfuel-api . ```
+```
+docker build -t moodfuel-api .
+```
 Run Container
 ``` 
 docker run -d -p 8000:8000 moodfuel-api 
 Access your app at:
-👉 http://localhost:8000/docs
 ```
+👉 http://localhost:8000/docs
+
 ☁️ Cloud Deployment (Render)
 Push your project to GitHub.
 Go to Render
@@ -128,8 +139,10 @@ Run local tests:
 
 CI/CD automatically runs these tests on every push (see .github/workflows/ci.yml).
 
-Author
-👤 Sameer Chauhan
-GitHub: <a href="[https://example.com](https://github.com/SamIeer)">SamIeer</a>
-LinkedIn: <a href="[[https://example.com](https://github.com/SamIeer)](https://www.linkedin.com/in/sameer-chauhan-363298269/)">Sameer-Chauhan</a>
-📧 Email: sameerchauhan212204@gmail.com
+## Author
+
+👤 **Sameer Chauhan**
+
+- GitHub: [SamIeer](https://github.com/SamIeer)
+- LinkedIn: [Sameer Chauhan](https://www.linkedin.com/in/sameer-chauhan-363298269/)
+- Email: **sameerchauhan212204@gmail.com**
