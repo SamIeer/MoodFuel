@@ -1,59 +1,45 @@
-# ☕ MoodFuel — Smart Coffee Strength Recommender
+# ☕ MoodFuel — AI-Powered Coffee Strength Recommender
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Framework-green?logo=fastapi)
 ![Docker](https://img.shields.io/badge/Containerized-Docker-blue?logo=docker)
-![CI/CD](https://img.shields.io/badge/CI/CD-GitHub_Actions-black?logo=githubactions)
-![ML](https://img.shields.io/badge/ML-scikit--learn-orange?logo=scikitlearn)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-black?logo=githubactions)
 ![Streamlit](https://img.shields.io/badge/UI-Streamlit-red?logo=streamlit)
 ![Gradio](https://img.shields.io/badge/Demo-Gradio-yellow?logo=gradio)
+![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey)
 
-> **MoodFuel** is an intelligent FastAPI + ML web app that predicts your **ideal coffee strength** based on your mood, stress, and sleep pattern — built with full MLOps workflow (Model + API + CI/CD + Docker + UI + Deployment).
+> **MoodFuel** is an AI-powered coffee strength recommender that suggests the ideal caffeine intensity based on your mood, stress, and sleep pattern — built using **FastAPI**, **scikit-learn**, **Docker**, and **Streamlit**.  
+> It’s a **learning-oriented, open-source project** demonstrating an end-to-end **MLOps pipeline** — from model training to deployment.
 
 ---
 
-## 🚀 Project Overview
+## 🧩 Summary
 
-### 🌟 Why MoodFuel?
-Everyone drinks coffee — but how much strength do you *actually* need?  
-MoodFuel helps you find the **perfect coffee intensity (1–10)** based on:
-- 😴 Hours of sleep  
-- 😤 Stress level  
+**MoodFuel** intelligently recommends your coffee strength on a 1–10 scale using data like:
+- 😴 Sleep duration
+- 😤 Stress level
+- 🕒 Time of day
 - 💻 Workload intensity  
-- 🕒 Time of day  
-
-Trained using `RandomForestRegressor`, the app recommends a caffeine level that balances focus and energy.
+It demonstrates **machine learning integration with FastAPI**, full **CI/CD automation**, and **modern frontends (Streamlit & Gradio)** for interactivity.
 
 ---
 
-## 🧠 Tech Stack
-
-| Layer | Tool |
-|:--|:--|
-| **ML Model** | scikit-learn, pandas, numpy |
-| **API Framework** | FastAPI |
-| **Containerization** | Docker |
-| **Continuous Integration** | GitHub Actions |
-| **Frontend UIs** | Streamlit, Gradio |
-| **Deployment** | Render, Hugging Face Spaces, AWS ECS |
+## ⚙️ Key Features
+- **FastAPI backend** serving ML predictions
+- **Streamlit dashboard** for user interaction
+- **Gradio demo interface** for ML visualization
+- **CI/CD automation** via GitHub Actions
+- **Containerized deployment** with Docker
+- **Cloud deployment** supported (Render)
 
 ---
 
-## 🏗️ Architecture Diagram
-
-![MoodFuel Deployment Architecture](./MoodFuel_Deployment_Architecture.png)
-
-**Pipeline Overview:**
-1. Synthetic data generated with `DataGenerator.py`
-2. Model trained using `train_model.py` → saved as `model.pkl`
-3. FastAPI serves `/predict` endpoint
-4. Streamlit and Gradio provide interactive UIs
-5. Docker + CI/CD enable reproducible, automated deployment
+## 🏗️ Project Architecture
+![Architecture](./MoodFuel_Deployment_Architecture.png)
 
 ---
 
-## 🗂️ Project Structure
-
+## 🗂️ Folder Structure
 ```
 ├── .gitignore
 ├── app
@@ -82,3 +68,68 @@ Trained using `RandomForestRegressor`, the app recommends a caffeine level that 
     │   └── ci.yml
 └── train_model.py
 ```
+
+---
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+- Python 3.10
+- pip or conda
+- Docker 
+- GitHub account (for CI/CD setup)
+
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/SamIeer/MoodFuel.git
+cd MoodFuel
+```
+### 2️⃣ Install Dependencies
+``` pip install -r deploy/requirements.txt ```
+
+### 3️⃣ Train the Model
+``` python train_model.py ```
+
+### 4️⃣ Run FastAPI Backend
+```
+uvicorn app.main:app --reload
+Visit http://127.0.0.1:8000/docs
+```
+### 💻 Run Frontend Interfaces
+Streamlit Dashboard
+``` streamlit run app/dashboard.py ```
+
+Gradio Demo
+``` python app/gradio_ui.py ```
+
+
+🐳 Docker Deployment
+Build Docker Image
+bash
+Copy code
+``` docker build -t moodfuel-api . ```
+Run Container
+``` 
+docker run -d -p 8000:8000 moodfuel-api 
+Access your app at:
+👉 http://localhost:8000/docs
+```
+☁️ Cloud Deployment (Render)
+Push your project to GitHub.
+Go to Render
+Create a New Web Service → connect GitHub repo.
+Select Docker environment → deploy.
+Your live AAP will be available at:
+https://moodfuel-api.onrender.com/docs
+
+🧪 Testing
+Run local tests:
+``` pytest -v ```
+
+CI/CD automatically runs these tests on every push (see .github/workflows/ci.yml).
+
+Author
+👤 Sameer Chauhan
+GitHub: <a href="[https://example.com](https://github.com/SamIeer)">SamIeer</a>
+LinkedIn: <a href="[[https://example.com](https://github.com/SamIeer)](https://www.linkedin.com/in/sameer-chauhan-363298269/)">Sameer-Chauhan</a>
+📧 Email: sameerchauhan212204@gmail.com
