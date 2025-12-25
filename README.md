@@ -139,6 +139,37 @@ Run local tests:
 
 CI/CD automatically runs these tests on every push (see .github/workflows/ci.yml).
 
+## 🚀 Contributing
+
+Contributions are welcome! To get started, follow these steps:
+
+1️⃣ Create a New Branch
+```
+git checkout -b feature/your-feature-name
+```
+
+2️⃣ Make Your Changes
+
+✔ Follow PEP 8 style guidelines
+✔ Add clear comments and docstrings
+✔ Keep your code readable and consistent
+
+3️⃣ Run Tests
+```
+pytest -v
+```
+
+4️⃣ Commit & Push
+```
+git add .
+git commit -m "Add new feature"
+git push origin feature/your-feature-name
+```
+
+5️⃣ Submit a Pull Request
+
+Open a Pull Request from your branch into the main branch and describe your changes clearly.
+
 ## Author
 
 👤 **Sameer Chauhan**
