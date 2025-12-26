@@ -4,6 +4,7 @@ import requests
 import time
 import os
 from datetime import datetime
+import json
 
 # ------------------------------------------------
 # Configuration & Constants
@@ -48,6 +49,7 @@ def predict_coffee_strength(data, api_url=API_URL):
     Call the prediction API with comprehensive error handling
     """
     try:
+        # Make API request
         response = requests.post(
             f"{api_url.rstrip('/')}/predict",
             json=data,
@@ -55,27 +57,41 @@ def predict_coffee_strength(data, api_url=API_URL):
             headers={"Content-Type": "application/json"}
         )
         
-        if response.status_code == 200:
-            return response.json(), None
-        elif response.status_code == 422:
-            return None, "Invalid input data. Please check your values."
-        elif response.status_code == 429:
-            return None, "Too many requests. Please wait a moment."
-        elif response.status_code == 500:
-            return None, "Server error. Please try again later."
-        elif response.status_code == 503:
-            return None, "Service temporarily unavailable."
-        else:
-            return None, f"API Error: {response.status_code}"
+        # Check response status
+        response.raise_for_status()  # This will raise HTTPError for bad responses
+        
+        # Parse JSON response
+        result = response.json()
+        
+        # Validate response structure
+        if "recommended_strength" not in result:
+            return None, "Invalid response from API: missing 'recommended_strength' field"
+        
+        return result, None
             
     except requests.exceptions.Timeout:
-        return None, "Request timed out. The server might be busy."
+        return None, "Request timed out. The server might be busy. Please try again."
     except requests.exceptions.ConnectionError:
-        return None, "Cannot connect to the API server. Please check your internet connection."
+        return None, f"Cannot connect to the API server at {api_url}. Please check your internet connection and the API URL."
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            return None, f"API endpoint not found at {api_url}/predict"
+        elif e.response.status_code == 422:
+            return None, "Invalid input data. Please check your values."
+        elif e.response.status_code == 429:
+            return None, "Too many requests. Please wait a moment."
+        elif e.response.status_code == 500:
+            return None, "Server error. Please try again later."
+        elif e.response.status_code == 503:
+            return None, "Service temporarily unavailable."
+        else:
+            return None, f"HTTP Error {e.response.status_code}: {str(e)}"
     except requests.exceptions.RequestException as e:
         return None, f"Network error: {str(e)}"
+    except json.JSONDecodeError:
+        return None, "Invalid response format from server. Please try again."
     except ValueError as e:
-        return None, f"Invalid response format: {str(e)}"
+        return None, f"Invalid response: {str(e)}"
     except Exception as e:
         return None, f"Unexpected error: {str(e)}"
 
@@ -110,6 +126,16 @@ def format_time_display(hour):
         return f"{hour}:00 PM ☀️"
     else:
         return f"{hour}:00 PM 🌆"
+
+# ------------------------------------------------
+# Initialize session state
+# ------------------------------------------------
+if 'click_count' not in st.session_state:
+    st.session_state.click_count = 0
+if 'saved_preferences' not in st.session_state:
+    st.session_state.saved_preferences = []
+if 'custom_api_url' not in st.session_state:
+    st.session_state.custom_api_url = API_URL
 
 # ------------------------------------------------
 # 1️⃣ App Config with Enhanced Styling
@@ -233,6 +259,15 @@ st.markdown("""
         border-left: 5px solid #2196F3;
         margin: 1rem 0;
     }
+    .debug-info {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #666;
+        background: #f5f5f5;
+        padding: 0.5rem;
+        border-radius: 5px;
+        margin-top: 0.5rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -302,6 +337,12 @@ st.markdown("*Adjust the sliders below to reflect your current state*")
 # Create two columns for better layout
 col_left, col_right = st.columns(2)
 
+# Initialize default values
+default_sleep_hours = 7.0
+default_stress_level = 5
+default_workload_level = 6
+default_time_of_day = datetime.now().hour if 6 <= datetime.now().hour <= 22 else 9
+
 with col_left:
     # Sleep Hours
     with st.container():
@@ -311,7 +352,7 @@ with col_left:
             "Hours of sleep last night",
             min_value=0.0,
             max_value=12.0,
-            value=7.0,
+            value=default_sleep_hours,
             step=0.5,
             help="How many hours did you sleep? (0 = no sleep)",
             key="sleep_slider",
@@ -345,7 +386,7 @@ with col_left:
             "Today's expected workload",
             min_value=1,
             max_value=10,
-            value=6,
+            value=default_workload_level,
             help="1 = Very light day, 10 = Extremely demanding day",
             key="workload_slider"
         )
@@ -373,7 +414,7 @@ with col_right:
             "Current stress level",
             min_value=1,
             max_value=10,
-            value=5,
+            value=default_stress_level,
             help="1 = Completely relaxed, 10 = Extremely stressed",
             key="stress_slider"
         )
@@ -400,7 +441,7 @@ with col_right:
             "Current time",
             min_value=6,
             max_value=22,
-            value=datetime.now().hour if 6 <= datetime.now().hour <= 22 else 9,
+            value=default_time_of_day,
             help="Select current hour (6 AM to 10 PM)",
             key="time_slider",
             format="%d:00"
@@ -497,7 +538,7 @@ with button_col2:
         type="primary"
     )
 
-# Placeholder for results
+# Placeholders for results and errors
 result_placeholder = st.empty()
 error_placeholder = st.empty()
 
@@ -511,8 +552,8 @@ if predict_button:
         # Create progress bar
         progress_bar = st.progress(0)
         
-        # Simulate progress with actual API call timing
-        for percent in range(0, 101, 5):
+        # Simulate progress
+        for percent in range(0, 101, 10):
             time.sleep(0.1)
             progress_bar.progress(percent)
         
@@ -524,39 +565,53 @@ if predict_button:
             "workload_level": int(workload_level),
         }
         
-        # Get user's custom API URL from session state or use default
-        custom_api = st.session_state.get('custom_api_url', API_URL)
+        # Get API URL from session state
+        api_url_to_use = st.session_state.get('custom_api_url', API_URL)
         
-        # Call API
-        result, error = predict_coffee_strength(payload, custom_api)
+        # Debug info (optional)
+        debug_expander = st.expander("🔧 Debug Info", expanded=False)
+        with debug_expander:
+            st.write("**Payload sent to API:**")
+            st.json(payload)
+            st.write(f"**API URL:** {api_url_to_use}/predict")
         
-        # Clear progress bar
+        # Call API using the fixed function
+        result, error = predict_coffee_strength(payload, api_url_to_use)
+        
+        # Complete progress bar
+        progress_bar.progress(100)
+        time.sleep(0.2)
         progress_bar.empty()
         
         if error:
-            # Show error message
+            # Display error message
             error_placeholder.markdown(f"""
             <div class='error-box'>
                 <div style='display: flex; align-items: center; margin-bottom: 0.5rem;'>
                     <span style='font-size: 1.5rem; margin-right: 10px;'>⚠️</span>
                     <h3 style='color: #D32F2F; margin: 0;'>Recommendation Failed</h3>
                 </div>
-                <p style='color: #666; margin: 0.5rem 0;'>{error}</p>
-                <p style='color: #666; font-size: 0.9rem; margin-top: 1rem;'>
-                    <b>Tips:</b><br>
-                    1. Check if the API server is running<br>
-                    2. Verify your internet connection<br>
-                    3. Try using a different API endpoint
-                </p>
+                <p style='color: #666; margin: 0.5rem 0;'><b>Error:</b> {error}</p>
+                <div style='margin-top: 1rem;'>
+                    <h4 style='color: #666; margin-bottom: 0.5rem;'>🛠️ Troubleshooting Tips:</h4>
+                    <ul style='color: #666; margin: 0.5rem 0; padding-left: 1.5rem;'>
+                        <li>Check if the API server is running</li>
+                        <li>Verify your internet connection</li>
+                        <li>Try using the default API endpoint</li>
+                        <li>Wait a moment and try again</li>
+                    </ul>
+                </div>
             </div>
             """, unsafe_allow_html=True)
             
             # Show retry button
-            if st.button("🔄 Try Again", use_container_width=True, key="retry_button"):
-                st.rerun()
-                
-        else:
-            # Extract result
+            retry_col1, retry_col2, retry_col3 = st.columns([1, 2, 1])
+            with retry_col2:
+                if st.button("🔄 Try Again", use_container_width=True, key="retry_button"):
+                    st.rerun()
+                    
+        elif result:
+            # Extract recommendation
             recommended_strength = result.get("recommended_strength", 5)
             category = get_strength_category(recommended_strength)
             category_info = STRENGTH_CATEGORIES[category]
@@ -637,12 +692,13 @@ if predict_button:
                 
                 st.markdown('</div>', unsafe_allow_html=True)
                 
-                # Share and save options
+                # Action buttons
                 st.markdown("---")
                 action_col1, action_col2, action_col3 = st.columns(3)
                 
                 with action_col1:
                     if st.button("📋 Copy Result", use_container_width=True, key="copy_result"):
+                        # Simulate copying to clipboard
                         st.session_state.copied = True
                         st.success("✅ Recommendation copied to clipboard!")
                         
@@ -652,8 +708,6 @@ if predict_button:
                         
                 with action_col3:
                     if st.button("⭐ Save Preference", use_container_width=True, key="save_preference"):
-                        if 'saved_preferences' not in st.session_state:
-                            st.session_state.saved_preferences = []
                         st.session_state.saved_preferences.append({
                             "strength": recommended_strength,
                             "category": category,
@@ -661,14 +715,29 @@ if predict_button:
                             "timestamp": datetime.now().isoformat()
                         })
                         st.success("✅ Preference saved!")
-                        
-                # Easter egg tracking
-                if 'click_count' not in st.session_state:
-                    st.session_state.click_count = 0
+                
+                # Track clicks for easter egg
                 st.session_state.click_count += 1
                 
+                # Easter egg after 3 clicks
                 if st.session_state.click_count >= 3:
                     st.balloons()
+                    st.sidebar.success("🎉 You're becoming a coffee expert!")
+                    
+                # Show coffee facts after result
+                coffee_facts = [
+                    "Coffee beans are actually the pit of a berry.",
+                    "The most expensive coffee in the world comes from civet poop.",
+                    "Finland drinks the most coffee per capita in the world.",
+                    "Coffee can help improve physical performance by 11-12%.",
+                    "The word 'coffee' comes from the Arabic word for 'wine'."
+                ]
+                st.markdown("---")
+                st.markdown(f"""
+                <div style="text-align: center; margin-top: 1rem;">
+                    <p style="color: #666; font-style: italic;">☕ **Coffee Fact:** {random.choice(coffee_facts)}</p>
+                </div>
+                """, unsafe_allow_html=True)
 
 # ------------------------------------------------
 # 5️⃣ Sidebar with Additional Features
@@ -680,88 +749,23 @@ with st.sidebar:
     st.markdown("### 🔗 API Configuration")
     custom_api_url = st.text_input(
         "API Endpoint URL",
-        value=API_URL,
+        value=st.session_state.get('custom_api_url', API_URL),
         help="Enter your custom API endpoint URL",
-        key="api_url_input"
+        key="api_url_input_sidebar"
     )
-    if custom_api_url != API_URL:
+    
+    # Update session state if changed
+    if custom_api_url != st.session_state.get('custom_api_url', API_URL):
         st.session_state.custom_api_url = custom_api_url
-        st.info(f"Using custom API: {custom_api_url}")
+        st.info(f"✅ Using custom API: {custom_api_url}")
     
     # Test API Connection
-    if st.button("Test API Connection", use_container_width=True, key="test_api"):
+    if st.button("Test API Connection", use_container_width=True, key="test_api_sidebar"):
         with st.spinner("Testing connection..."):
-            test_result, test_error = predict_coffee_strength({
+            test_payload = {
                 "sleep_hours": 7.0,
                 "stress_level": 5,
                 "time_of_day": 9,
                 "workload_level": 6
-            }, custom_api_url)
-            
-            if test_error:
-                st.error(f"❌ Connection failed: {test_error}")
-            else:
-                st.success("✅ API connection successful!")
-    
-    # Theme selector
-    st.markdown("### 🎨 Personalization")
-    theme = st.selectbox(
-        "Color Theme",
-        ["Coffee Brown ☕", "Dark Roast 🖤", "Caramel Latte 🍯", "Espresso Black ⚫"],
-        index=0
-    )
-    
-    # Coffee preferences
-    st.markdown("### ❤️ Coffee Preferences")
-    favorite_brew = st.multiselect(
-        "Favorite Brew Methods",
-        ["Espresso", "French Press", "Pour Over", "Aeropress", "Cold Brew", "Moka Pot", "Drip Coffee", "Turkish"],
-        default=["Espresso", "French Press"]
-    )
-    
-    daily_limit = st.slider("Max cups per day", 1, 10, 3, help="Set your daily coffee limit")
-    
-    # Saved preferences
-    if 'saved_preferences' in st.session_state and st.session_state.saved_preferences:
-        st.markdown("### 📚 Saved Preferences")
-        for i, pref in enumerate(st.session_state.saved_preferences[-3:]):  # Show last 3
-            with st.expander(f"Preference {i+1}: {pref['strength']}/10"):
-                st.write(f"Strength: {pref['strength']}/10")
-                st.write(f"Category: {pref['category'].title()}")
-                st.write(f"Date: {pref['timestamp'][:10]}")
-                if st.button(f"Load Preference {i+1}", key=f"load_pref_{i}"):
-                    st.success(f"Loaded preference {i+1}!")
-    
-    # Information section
-    st.markdown("---")
-    st.markdown("## ℹ️ About MoodFuel")
-    st.markdown("""
-    <div class='info-box'>
-        <p><b>MoodFuel</b> uses machine learning to recommend 
-        the perfect coffee strength based on your:</p>
-        <ul style='margin: 0.5rem 0; padding-left: 1.5rem;'>
-            <li>Sleep patterns 😴</li>
-            <li>Stress levels 🧠</li>
-            <li>Workload 💼</li>
-            <li>Time of day ⏰</li>
-        </ul>
-        <p>Get personalized coffee recommendations!</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Quick tips
-    with st.expander("💡 Quick Coffee Tips", expanded=False):
-        st.markdown("""
-        - **Morning (6-11 AM)**: Medium strength for steady energy
-        - **Afternoon (12-4 PM)**: Light brew to avoid sleep disruption
-        - **Evening (5-10 PM)**: Very light or decaf only
-        - **High stress**: Avoid very strong coffee, try lighter roasts
-        - **Low sleep**: Consider moderate strength, not too strong
-        - **Heavy workload**: Medium-strong brew with breaks
-        """)
-    
-    # Health disclaimer
-    st.caption("""
-    ⚠️ **Disclaimer:** This app provides recommendations only. 
-    Consult with a healthcare professional for dietary advice.
-    Recommended daily limit: 3-4 cups of coffee. """)
+            }
+            # test_result
