@@ -268,17 +268,12 @@ if predict_button:
         }
         try:
             response = predict(payload)
-
             result = response["recommended_strength"]
-            
-            if response.status_code == 200:
-                result = response.json()["recommended_strength"]
-                
-                # Clear progress bar
-                progress_bar.empty()
-                
-                # Display result with enhanced styling
-                with result_placeholder.container():
+
+            # Clear progress bar
+            progress_bar.empty()
+            # Display result with enhanced styling
+            with result_placeholder.container():
                     st.markdown('<div class="result-card">', unsafe_allow_html=True)
                     
                     # Coffee strength meter
@@ -366,8 +361,8 @@ if predict_button:
                         st.success("✅ Recommendation copied to clipboard!")
                         st.session_state.copied = False
                         
-            else:
-                st.error("⚠️ Could not get a recommendation. Please try again.")
+            # else:
+            #     st.error("⚠️ Could not get a recommendation. Please try again.")
                 
         except requests.exceptions.ConnectionError:
             st.error("🔌 **API Connection Error**")
