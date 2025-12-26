@@ -5,6 +5,19 @@ from PIL import Image
 import base64
 from io import BytesIO
 import time
+import os 
+import requests
+
+# ------------------------------------------------
+# API integration
+# ------------------------------------------------
+API_URL = os.getenv("API_URL", "https://moodfuel-api.onrender.com")
+
+def predict(data):
+    res = requests.post(f"{API_URL}/predict", json=data, timeout=15)
+    res.raise_for_status()
+    return res.json()
+
 
 # ------------------------------------------------
 # 1️⃣ App Config with Enhanced Styling
@@ -247,17 +260,16 @@ if predict_button:
             progress_bar.progress(i + 1)
         
         # Call FastAPI endpoint
+        payload = {
+            "sleep_hours": sleep_hours,
+            "stress_level": stress_level,
+            "time_of_day": time_of_day,
+            "workload_level": workload_level,
+        }
         try:
-            response = requests.post(
-                "http://127.0.0.1:8000/predict",
-                json={
-                    "sleep_hours": sleep_hours,
-                    "stress_level": stress_level,
-                    "time_of_day": time_of_day,
-                    "workload_level": workload_level,
-                },
-                timeout=10,
-            )
+            response = predict(payload)
+
+            result = response["recommended_strength"]
             
             if response.status_code == 200:
                 result = response.json()["recommended_strength"]
@@ -375,9 +387,10 @@ with st.sidebar:
     st.markdown("### 🔗 API Settings")
     api_url = st.text_input(
         "API Endpoint",
-        value="http://127.0.0.1:8000/predict",
+        value=API_URL,
         help="Change if your API is hosted elsewhere"
     )
+    # API_URL = custom_api
     
     # Theme selector
     st.markdown("### 🎨 Theme")
