@@ -429,34 +429,33 @@ footer_col1, footer_col2, footer_col3 = st.columns(3)
 with footer_col1:
     st.markdown("### 🛠️ Built With")
     st.markdown("""
+    - Python 🐍
     - FastAPI ⚡
     - Streamlit 🎈
     - scikit-learn 🤖
-    - Python 🐍
     """)
 
 with footer_col2:
     st.markdown("### 📚 Learn More")
     st.markdown("""
-    [GitHub Repository](https://github.com)  
-    [Documentation](https://docs.example.com)  
+    [GitHub Repository](https://github.com/SamIeer/MoodFuel)  
+    [Documentation](https://github.com/SamIeer/MoodFuel/blob/main/README.md)  
     [Coffee Science](https://example.com)
     """)
 
 with footer_col3:
     st.markdown("### 📞 Support")
     st.markdown("""
-    Found a bug? [Report here](https://github.com/issues)  
-    Want a feature? [Request here](https://github.com/discussions)  
-    Questions? [Join our community](https://discord.gg/example)
+    Found a bug? [Report here](https://github.com/SamIeer/MoodFuel/issues)  
     """)
-
+# Want a feature? [Request here](https://github.com/discussions)  
+#     Questions? [Join our community](https://discord.gg/example)
 st.markdown("---")
 st.caption("""
 <div style="text-align: center; color: #666;">
-    Made with ❤️ and lots of ☕ by the MoodFuel Team • 
+    Made with ❤️ and lots of ☕ by Sameer Chauhan• 
     <i>Enjoy your perfect brew!</i> • 
-    v1.0.0 © 2024
+    v1.0.0 © 2025
 </div>
 """, unsafe_allow_html=True)
 
