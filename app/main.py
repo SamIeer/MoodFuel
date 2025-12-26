@@ -3,8 +3,17 @@ import joblib
 import numpy as np
 import pandas as pd
 from app.schema import MoodInput
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="MoodFuel: Smart coffee Strength Recommender")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Load trained model
 model = joblib.load("model/model.pkl")
