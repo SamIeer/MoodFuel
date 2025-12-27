@@ -10,6 +10,8 @@
 
 > **MoodFuel** is an AI-powered coffee strength recommender that suggests the ideal caffeine intensity based on your mood, stress, and sleep pattern — built using **FastAPI**, **scikit-learn**, **Docker**, and **Streamlit**.  
 > It’s a **learning-oriented, open-source project** demonstrating an end-to-end **MLOps pipeline** — from model training to deployment.
+> API Endpoint : https://moodfuel-api.onrender.com/
+> Streamlit App : https://moodfuel.onrender.com
 
 ---
 
