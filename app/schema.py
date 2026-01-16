@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+# Modle Schema
 class MoodInput(BaseModel):
     sleep_hours: float
     stress_level: int
